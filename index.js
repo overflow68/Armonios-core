@@ -12,82 +12,79 @@ class Wallet {
     this.extendedPubKey = this.getXpub(mnemonic)
     this.active = false
     this.activeAddresses = {
-        change:[],
-        receiving:[]
-    },
-    this.addressHistory = {
-
+      change: [],
+      receiving: []
     }
+    this.addressHistory = {}
   }
 
   getXprv (mnemonic) {
     const seed = bip39.mnemonicToSeedSync(mnemonic)
     const rootKey = bip32.fromSeed(seed)
-    
-    return rootKey.toBase58();
+    return rootKey.toBase58()
   }
 
   getXpub (mnemonic) {
     const seed = bip39.mnemonicToSeedSync(mnemonic)
     const rootKey = bip32.fromSeed(seed)
-
     return rootKey.neutered().toBase58()
   }
-  generateReceiveAddresses(quantity){
+
+  generateAddresses (quantity, isChange) {
     const rootKey = bip32.fromBase58(this.extendedPrivKey)
-    const startIndex = this.activeAddresses.receiving.length
+    const startIndex = isChange ? this.activeAddresses.change.length : this.activeAddresses.receiving.length
+    const pathParts = this.path.split('/')
+
     for (let i = startIndex; i < startIndex + quantity; i++) {
-      const destructuredPath = this.path.split('/')
-      destructuredPath[2] = i
-      const finalPath = destructuredPath.join('/')
+      pathParts[1] = isChange ? 1 : 0
+      pathParts[2] = i
+      const finalPath = pathParts.join('/')
 
       const extendedKey = rootKey.derivePath(finalPath)
-      const { address } =  bitcoin.payments.p2wpkh({ pubkey: extendedKey.publicKey })
-      if (!this.activeAddresses.receiving.includes(address)) {
-        this.activeAddresses.receiving.push(address)
-      }
-    }
-    
-  }
-  generateChangeAddresses(quantity){
-    const rootKey = bip32.fromBase58(this.extendedPrivKey)
-    const startIndex = this.activeAddresses.change.length
-    for (let i = startIndex; i < startIndex + quantity; i++) {
-      const destructuredPath = this.path.split('/')
-      destructuredPath[1] = 1
-      destructuredPath[2] = i
-      const finalPath = destructuredPath.join('/')
+      const { address } = bitcoin.payments.p2wpkh({ pubkey: extendedKey.publicKey })
 
-      const extendedKey = rootKey.derivePath(finalPath)
-      const { address } =  bitcoin.payments.p2wpkh({ pubkey: extendedKey.publicKey })
-      if (!this.activeAddresses.change.includes(address)) {
-        this.activeAddresses.change.push(address)
+      if (!this.activeAddresses[isChange ? 'change' : 'receiving'].includes(address)) {
+        this.activeAddresses[isChange ? 'change' : 'receiving'].push(address)
+        this.addressHistory[address] = []
       }
     }
   }
-  //make this add addresses and their transaction hashes to address history
+
   async checkForTxs () {
     let api = 'https://blockchain.info/multiaddr?active='
-    this.activeAddresses.receiving.forEach(address=>{
-        api+=`|${address}`
-    })
-    this.activeAddresses.change.forEach(address=>{
-        api+=`|${address}`
-    })
+    const activeAddresses = [...this.activeAddresses.change, ...this.activeAddresses.receiving]
+    api += activeAddresses.join('|')
+
     const response = await fetch(api)
     const data = await response.json()
+
     if (data.txs.length === 0) {
-      console.log('Wallet is inactive')
-    } else {this.active = true
-    console.log(data)}
+      return 'Wallet is inactive'
+    }
+
+    this.active = true
+    data.txs.forEach(tx => {
+      tx.out.forEach(output => {
+        if (output.addr in this.addressHistory) {
+          if (!this.addressHistory[output.addr].includes(tx.hash)) {
+            this.addressHistory[output.addr].push(tx.hash)
+            this.addressHistory[output.addr].push(tx.block_height)
+          }
+        }
+      })
+    })
   }
-  
 }
 
 const myWallet = new Wallet('main insane wine thank cluster couch word mad flock creek silver near')
 
+// false means receiving address, true means change
+myWallet.generateAddresses(3, false)
+myWallet.generateAddresses(3, true)
 
 
-myWallet.generateChangeAddresses(2)
-
-
+async function stuff () {
+  await myWallet.checkForTxs()
+  console.log(myWallet)
+}
+stuff()
