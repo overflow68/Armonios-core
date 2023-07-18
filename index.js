@@ -87,12 +87,11 @@ class Wallet {
       })
     })
   }
-
-  // const { hash, index, witnessUtxo } = inputData
-  async createTx (receiver, value) {
-    const hdRoot = bip32.fromBase58(this.extendedPrivKey)
-    const inputs = this.getHdData(this.getInputData(value))
-
+// we use this function to build the entire transaction, get the fee and other relevant info without broadcasting it. the transaction is then built again with the according fee.
+  getTxFee(hdRoot,inputs,receiver,value){
+    if (inputs.length === 0){
+      return 0
+    }
     const psbt = new bitcoin.Psbt({ network: bitcoin.networks.bitcoin })
 
     let totalInputValue = 0
@@ -106,38 +105,28 @@ class Wallet {
       value
     })
 
-
-
-
-
-
-
-
-//Find a way to adjust fee rate
-
-
-
-
-
-
-
-
+    if(totalInputValue > value){
+psbt.addOutput({
+  address: this.getEmptyChangeAddr(),
+  value: totalInputValue - value
+})
+    }
 
     let inputIndex = 0
     inputs.forEach(input => {
       psbt.signInputHD(inputIndex, hdRoot)// Must sign with root!!!
       inputIndex++
     })
-    let newInputIndex = 0
+    inputIndex = 0
     inputs.forEach(input => {
       const childNode = hdRoot.derivePath(input.bip32Derivation[0].path)
-      assert.strictEqual(psbt.validateSignaturesOfInput(newInputIndex, validator), true)
+      assert.strictEqual(psbt.validateSignaturesOfInput(inputIndex, validator), true)
       assert.strictEqual(
-        psbt.validateSignaturesOfInput(newInputIndex, validator, childNode.publicKey),
+        psbt.validateSignaturesOfInput(inputIndex, validator, childNode.publicKey),
         true
       )
 
-      newInputIndex++
+      inputIndex++
     })
 
     psbt.finalizeAllInputs()
@@ -145,7 +134,63 @@ class Wallet {
     const tx = psbt.extractTransaction().toHex()
     const transaction = bitcoin.Transaction.fromHex(tx);
 const transactionSizeVbytes = transaction.virtualSize();
-console.log(transactionSizeVbytes)
+console.log("tx bytes",transactionSizeVbytes)
+return transactionSizeVbytes
+  }
+  
+  createTx (receiver, value,feeRate) {
+    const inputs = this.getHdData(this.getInputData(value))
+    if (inputs.length === 0){
+      return "You don't have enough bitcoin"
+    }
+    const hdRoot = bip32.fromBase58(this.extendedPrivKey)
+    const fee = (this.getTxFee(hdRoot,inputs,receiver,value)+4)*feeRate
+    console.log("totalfee",fee)
+    const psbt = new bitcoin.Psbt({ network: bitcoin.networks.bitcoin })
+
+    let totalInputValue = 0
+    inputs.forEach(input => {
+      psbt.addInput(input)
+      totalInputValue +=input.witnessUtxo.value
+    })
+
+    psbt.addOutput({
+      address: receiver,
+      value
+    })
+console.log(value+fee)
+    if(totalInputValue > value+fee){
+psbt.addOutput({
+  address: this.getEmptyChangeAddr(),
+  value: totalInputValue - value - fee
+})
+
+}else return "You don't have enough Bitcoin. please adjust fee or amount to send."
+
+    
+
+    let inputIndex = 0
+    inputs.forEach(input => {
+      psbt.signInputHD(inputIndex, hdRoot)// Must sign with root!!!
+      inputIndex++
+    })
+    inputIndex = 0
+    inputs.forEach(input => {
+      const childNode = hdRoot.derivePath(input.bip32Derivation[0].path)
+      assert.strictEqual(psbt.validateSignaturesOfInput(inputIndex, validator), true)
+      assert.strictEqual(
+        psbt.validateSignaturesOfInput(inputIndex, validator, childNode.publicKey),
+        true
+      )
+
+      inputIndex++
+    })
+
+    psbt.finalizeAllInputs()
+
+    const tx = psbt.extractTransaction().toHex()
+    return tx
+
   }
 
   // Gathers the right inputs for our transaction. is then passed as an argument to getHdData()
@@ -178,6 +223,7 @@ console.log(transactionSizeVbytes)
         return allInputs
       }
     }
+    return []
   }
 
   getWitnessUtxo (out) {
@@ -220,6 +266,18 @@ console.log(transactionSizeVbytes)
     })
     return inputData
   }
+
+  getEmptyChangeAddr(){
+    for(let i=0;i<=this.activeAddresses.change.length;i++){
+      if (this.addressHistory[this.activeAddresses.change[i]] !== undefined){
+        return this.activeAddresses.change[i]
+
+      }else{
+        this.generateAddresses(1,true)
+        return this.activeAddresses.change.length-1
+      }
+    }
+  }
 }
 
 const myWallet = new Wallet('main insane wine thank cluster couch word mad flock creek silver near')
@@ -228,12 +286,14 @@ const myWallet = new Wallet('main insane wine thank cluster couch word mad flock
 myWallet.generateAddresses(3, false)
 myWallet.generateAddresses(3, true)
 
+
 async function stuff () {
   await myWallet.checkForTxs()
 
   // myWallet.createTx('bc1qk8g8fszg8kz7ddq2xyudy4hf0x9mxfyvp5vj92', 40000)
 
-  myWallet.createTx('bc1qvxajzx22d9hhq50nrfv3nsfelnjxphq66uz0c8', 25000)
+//console.log(myWallet)
+  console.log(myWallet.createTx('bc1qvxajzx22d9hhq50nrfv3nsfelnjxphq66uz0c8', 32000,13))
   // console.log(myWallet.getHdData(myWallet.getInputData(25000))[0].bip32Derivation)
 }
 stuff()
