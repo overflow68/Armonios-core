@@ -5,6 +5,7 @@ const { ECPairFactory } = require('ecpair')
 const bip32 = BIP32Factory(ecc)
 const bitcoin = require('bitcoinjs-lib')
 const assert = require('assert')
+const { clear } = require('console')
 const ECPair = ECPairFactory(ecc)
 const validator = (pubkey, msghash, signature) => {
   return ECPair.fromPublicKey(pubkey).verify(msghash, signature)
@@ -87,7 +88,7 @@ class Wallet {
       })
     })
   }
-// we use this function to build the entire transaction, get the fee and other relevant info without broadcasting it. the transaction is then built again with the according fee.
+// we use this function to build the entire transaction, get the fee (Size in vbytes) and other relevant info without broadcasting it. the transaction is then built again with the according fee.
   getTxFee(hdRoot,inputs,receiver,value){
     if (inputs.length === 0){
       return 0
@@ -134,7 +135,7 @@ psbt.addOutput({
     const tx = psbt.extractTransaction().toHex()
     const transaction = bitcoin.Transaction.fromHex(tx);
 const transactionSizeVbytes = transaction.virtualSize();
-console.log("tx bytes",transactionSizeVbytes)
+
 return transactionSizeVbytes
   }
   
@@ -145,7 +146,7 @@ return transactionSizeVbytes
     }
     const hdRoot = bip32.fromBase58(this.extendedPrivKey)
     const fee = (this.getTxFee(hdRoot,inputs,receiver,value)+4)*feeRate
-    console.log("totalfee",fee)
+    
     const psbt = new bitcoin.Psbt({ network: bitcoin.networks.bitcoin })
 
     let totalInputValue = 0
@@ -158,12 +159,13 @@ return transactionSizeVbytes
       address: receiver,
       value
     })
-console.log(value+fee)
-    if(totalInputValue > value+fee){
+
+    if(totalInputValue >= value+fee){
+      if(totalInputValue - value - fee > 600){
 psbt.addOutput({
   address: this.getEmptyChangeAddr(),
   value: totalInputValue - value - fee
-})
+})}
 
 }else return "You don't have enough Bitcoin. please adjust fee or amount to send."
 
@@ -188,8 +190,19 @@ psbt.addOutput({
 
     psbt.finalizeAllInputs()
 
-    const tx = psbt.extractTransaction().toHex()
-    return tx
+    const rawTx = psbt.extractTransaction().toHex()
+    const tx = bitcoin.Transaction
+    const nextChangeAddr = this.activeAddresses.change[this.activeAddresses.change.length-1]
+    const jsonTx = {
+      hash:tx.fromHex(rawTx).getHash().toString("hex"),
+      inputs:inputs,
+      outputs:[
+        {receiver: receiver,value:value},
+        totalInputValue >= value + fee && totalInputValue - value-fee > 600? {receiver:nextChangeAddr,value:totalInputValue - value - fee}:null///////////////////////////////////////////////////////////////
+
+      ]
+  }
+    return {rawTx,jsonTx}
 
   }
 
@@ -293,7 +306,7 @@ async function stuff () {
   // myWallet.createTx('bc1qk8g8fszg8kz7ddq2xyudy4hf0x9mxfyvp5vj92', 40000)
 
 //console.log(myWallet)
-  console.log(myWallet.createTx('bc1qvxajzx22d9hhq50nrfv3nsfelnjxphq66uz0c8', 32000,13))
+  console.log(myWallet.createTx('bc1qvxajzx22d9hhq50nrfv3nsfelnjxphq66uz0c8', 30000,9))
   // console.log(myWallet.getHdData(myWallet.getInputData(25000))[0].bip32Derivation)
 }
 stuff()
