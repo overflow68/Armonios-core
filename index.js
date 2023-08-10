@@ -1,4 +1,4 @@
-const ecc = require('tiny-secp256k1')
+const ecc = require('@bitcoinerlab/secp256k1')
 const bip39 = require('bip39')
 const { BIP32Factory } = require('bip32')
 const { ECPairFactory } = require('ecpair')
@@ -6,12 +6,23 @@ const bip32 = BIP32Factory(ecc)
 const bitcoin = require('bitcoinjs-lib')
 const assert = require('assert')
 
+function mergeArraysByHash(array1, array2) {
+  const uniqueHashes = new Set(array1.map(item => item.hash));
+  
+  const uniqueObjectsFromArray2 = array2.filter(item2 => !uniqueHashes.has(item2.hash));
+  
+  return [...array1, ...uniqueObjectsFromArray2];
+}
+
+
+
+
 const ECPair = ECPairFactory(ecc)
 const validator = (pubkey, msghash, signature) => {
   return ECPair.fromPublicKey(pubkey).verify(msghash, signature)
 }
 
-class Wallet {
+ class Wallet {
   constructor (mnemonic) {
     this.mnemonic = mnemonic
     this.path = 'm/0/0'
@@ -71,7 +82,9 @@ class Wallet {
       return 'Wallet is inactive'
     }
     this.active = true
-    this.txHistory = this.txHistory.concat(data.txs)
+    
+    this.txHistory=mergeArraysByHash(this.txHistory,data.txs)
+
     
     data.txs.forEach(tx => {
       tx.out.forEach(output => {
@@ -141,7 +154,7 @@ const transactionSizeVbytes = transaction.virtualSize();
 return transactionSizeVbytes
   }
   
-  createTx (receiver, value,feeRate) {
+  createTx (receiver,value,feeRate) {
     const inputs = this.getHdData(this.getInputData(value))
     if (inputs.length === 0){
       return "You don't have enough bitcoin"
@@ -169,7 +182,7 @@ psbt.addOutput({
   value: totalInputValue - value - fee
 })}
 
-}else return "You don't have enough Bitcoin. please adjust fee or amount to send."
+}else throw new Error("You don't have enough Bitcoin. please adjust fee or amount to send.")
 
     
 
@@ -200,7 +213,7 @@ psbt.addOutput({
       inputs:inputs,
       outputs:[
         {receiver: receiver,value:value},
-        totalInputValue >= value + fee && totalInputValue - value-fee > 600? {receiver:nextChangeAddr,value:totalInputValue - value - fee}:null///////////////////////////////////////////////////////////////
+        totalInputValue >= value + fee && totalInputValue - value-fee > 600? {receiver:nextChangeAddr,value:totalInputValue - value - fee}:null
 
       ]
   }
@@ -216,7 +229,7 @@ psbt.addOutput({
     let mixin = {}
     const allInputs = []
     let totalAmount = 0
-    const coin = this.unspentCoins
+    const coin = JSON.parse(JSON.stringify(this.unspentCoins));
     for (let i = 0; i <= coin.length - 1; i++) {
       if (amount >= coin[i].value) {
         totalAmount += coin[i].value
@@ -232,6 +245,7 @@ psbt.addOutput({
       } else {
         hash = coin[i].hash
         index = coin[i].n
+        addr = coin[i].addr
         const witnessUtxo = this.getWitnessUtxo(coin[i])
         mixin = { witnessUtxo }
         allInputs.push({ addr, hash, index, ...mixin })
@@ -295,7 +309,7 @@ psbt.addOutput({
   }
 }
 
-const myWallet = new Wallet('main insane wine thank cluster couch word mad flock creek silver near')
+/*const myWallet = new Wallet('main insane wine thank cluster couch word mad flock creek silver near')
 
 // false means receiving address, true means change
 myWallet.generateAddresses(20, false)
@@ -303,16 +317,22 @@ myWallet.generateAddresses(10, true)
 
 
 
-/*async function stuff () {
+
+
+async function stuff () {
   await myWallet.checkForTxs()
+  
 
   // myWallet.createTx('bc1qk8g8fszg8kz7ddq2xyudy4hf0x9mxfyvp5vj92', 40000)
 
-console.log(myWallet.txHistory)
-  //console.log(myWallet.createTx('bc1qvxajzx22d9hhq50nrfv3nsfelnjxphq66uz0c8', 30000,9))
+
+
+  console.log(myWallet.createTx('bc1qvxajzx22d9hhq50nrfv3nsfelnjxphq66uz0c8', 10000,52).jsonTx)
+ 
   // console.log(myWallet.getHdData(myWallet.getInputData(25000))[0].bip32Derivation)
   //console.log(myWallet.getEmptyChangeAddr())
 }
-stuff()*/
+stuff()
+*/
 
-module.exports = Wallet
+module.exports = {Wallet,bip39}
