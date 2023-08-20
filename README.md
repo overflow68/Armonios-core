@@ -148,5 +148,6 @@ console.log('Address History:', myWallet.addressHistory);
 console.log('Unspent Coins:', myWallet.unspentCoins);
 console.log('Transaction History:', myWallet.txHistory);
 ```
-##Conclusion
+## Conclusion
+
 Armonios-core offers functionalities for mnemonic-based key generation, address generation, transaction creation, and interaction with the Bitcoin blockchain. Users can create transactions, estimate fees, and manage their Bitcoin wallet using this class. Make sure to use the appropriate libraries and dependencies to ensure the correct behavior of the wallet.
