@@ -75,10 +75,6 @@ Generates the necessary BIP32 derivation data for each input's holding address.
 
 Finds or generates a change address that can be used for receiving change from transactions.
 
-## Conclusion
-
-Armonios-core provides functionalities for mnemonic-based key generation, address creation, transaction creation, and interaction with the Bitcoin blockchain. Users can create transactions, estimate fees, and manage their Bitcoin wallet using this logic.
-
 checkForTxs()
 Queries the blockchain for transactions involving the wallet's addresses. Updates active status, txHistory, addressHistory, and unspentCoins.
 
@@ -100,9 +96,9 @@ Generates the necessary BIP32 derivation data for each input's holding address.
 getEmptyChangeAddr()
 Finds or generates a change address that can be used for receiving change from transactions.
 
-# Bitcoin Wallet Logic Usage Examples
+#Armonios-core Usage Examples
 
-Below are some usage examples for the Bitcoin Wallet Logic class. These examples demonstrate how to create a wallet, generate addresses, check for transactions, create transactions, and access wallet properties.
+Below are some usage examples for Armonios-core. These examples demonstrate how to create a wallet, generate addresses, check for transactions, create transactions, and access wallet properties.
 
 ```javascript
 // Import necessary libraries and classes
@@ -130,7 +126,7 @@ await myWallet.checkForTxs();
 
 // Create a transaction
 const recipientAddress = 'recipient-address';
-const amountToSend = 0.01; // BTC
+const amountToSend = 100000; // satoshis
 const feeRate = 10; // Satoshis per byte
 
 try {
@@ -150,6 +146,6 @@ console.log('Active Addresses:', myWallet.activeAddresses);
 console.log('Address History:', myWallet.addressHistory);
 console.log('Unspent Coins:', myWallet.unspentCoins);
 console.log('Transaction History:', myWallet.txHistory);
-
+```
 Conclusion
-The provided Bitcoin wallet logic class offers functionalities for mnemonic-based key generation, address generation, transaction creation, and interaction with the Bitcoin blockchain. Users can create transactions, estimate fees, and manage their Bitcoin wallet using this class. Make sure to use the appropriate libraries and dependencies to ensure the correct behavior of the wallet.
+Armonios-core offers functionalities for mnemonic-based key generation, address generation, transaction creation, and interaction with the Bitcoin blockchain. Users can create transactions, estimate fees, and manage their Bitcoin wallet using this class. Make sure to use the appropriate libraries and dependencies to ensure the correct behavior of the wallet.
