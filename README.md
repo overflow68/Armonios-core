@@ -1,6 +1,6 @@
-# Bitcoin Wallet Logic Documentation
+#Armonios-core Documentation
 
-The Bitcoin Wallet Logic is a JavaScript class that enables the management of a Bitcoin wallet, including key generation, address creation, transaction creation, and interaction with the Bitcoin blockchain.
+Armonios-core is a JavaScript class that enables the management of a Bitcoin wallet, including key generation, address creation, transaction creation, and interaction with the Bitcoin blockchain.
 
 ## Prerequisites
 
@@ -77,7 +77,7 @@ Finds or generates a change address that can be used for receiving change from t
 
 ## Conclusion
 
-The Bitcoin Wallet Logic class provides functionalities for mnemonic-based key generation, address creation, transaction creation, and interaction with the Bitcoin blockchain. Users can create transactions, estimate fees, and manage their Bitcoin wallet using this logic. Ensure the appropriate libraries and dependencies are installed to ensure the proper functionality of the wallet logic.are stored in activeAddresses and addressHistory.
+Armonios-core provides functionalities for mnemonic-based key generation, address creation, transaction creation, and interaction with the Bitcoin blockchain. Users can create transactions, estimate fees, and manage their Bitcoin wallet using this logic.
 
 checkForTxs()
 Queries the blockchain for transactions involving the wallet's addresses. Updates active status, txHistory, addressHistory, and unspentCoins.
@@ -101,4 +101,4 @@ getEmptyChangeAddr()
 Finds or generates a change address that can be used for receiving change from transactions.
 
 Conclusion
-The provided Bitcoin wallet logic class offers functionalities for mnemonic-based key generation, address generation, transaction creation, and interaction with the Bitcoin blockchain. Users can create transactions, estimate fees, and manage their Bitcoin wallet using this logic. Make sure to use the appropriate libraries and dependencies to ensure the correct behavior of the wallet logic.
+The provided Bitcoin wallet logic class offers functionalities for mnemonic-based key generation, address generation, transaction creation, and interaction with the Bitcoin blockchain. Users can create transactions, estimate fees, and manage their Bitcoin wallet using this class. Make sure to use the appropriate libraries and dependencies to ensure the correct behavior of the wallet.
