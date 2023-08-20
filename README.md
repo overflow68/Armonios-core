@@ -100,5 +100,56 @@ Generates the necessary BIP32 derivation data for each input's holding address.
 getEmptyChangeAddr()
 Finds or generates a change address that can be used for receiving change from transactions.
 
+# Bitcoin Wallet Logic Usage Examples
+
+Below are some usage examples for the Bitcoin Wallet Logic class. These examples demonstrate how to create a wallet, generate addresses, check for transactions, create transactions, and access wallet properties.
+
+```javascript
+// Import necessary libraries and classes
+const ecc = require('@bitcoinerlab/secp256k1');
+const bip39 = require('bip39');
+const { BIP32Factory } = require('bip32');
+const { ECPairFactory } = require('ecpair');
+const bip32 = BIP32Factory(ecc);
+const bitcoin = require('bitcoinjs-lib');
+const assert = require('assert');
+
+// Import the Wallet class from the provided code
+const Wallet = require('./path/to/your/WalletClass');
+
+// Create a new wallet instance with a BIP39 mnemonic
+const mnemonic = bip39.generateMnemonic();
+const myWallet = new Wallet(mnemonic);
+
+// Generate 5 receiving addresses and 3 change addresses
+myWallet.generateAddresses(5, false); // 5 receiving addresses
+myWallet.generateAddresses(3, true);  // 3 change addresses
+
+// Check for transactions involving wallet addresses
+await myWallet.checkForTxs();
+
+// Create a transaction
+const recipientAddress = 'recipient-address';
+const amountToSend = 0.01; // BTC
+const feeRate = 10; // Satoshis per byte
+
+try {
+  const { rawTx, jsonTx } = myWallet.createTx(recipientAddress, amountToSend, feeRate);
+  console.log('Raw Transaction:', rawTx);
+  console.log('JSON Transaction:', jsonTx);
+} catch (error) {
+  console.error('Transaction creation failed:', error.message);
+}
+
+// Print wallet information
+console.log('Mnemonic:', myWallet.mnemonic);
+console.log('Extended Private Key:', myWallet.extendedPrivKey);
+console.log('Extended Public Key:', myWallet.extendedPubKey);
+console.log('Active:', myWallet.active);
+console.log('Active Addresses:', myWallet.activeAddresses);
+console.log('Address History:', myWallet.addressHistory);
+console.log('Unspent Coins:', myWallet.unspentCoins);
+console.log('Transaction History:', myWallet.txHistory);
+
 Conclusion
 The provided Bitcoin wallet logic class offers functionalities for mnemonic-based key generation, address generation, transaction creation, and interaction with the Bitcoin blockchain. Users can create transactions, estimate fees, and manage their Bitcoin wallet using this class. Make sure to use the appropriate libraries and dependencies to ensure the correct behavior of the wallet.
