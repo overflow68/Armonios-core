@@ -75,30 +75,31 @@ Generates the necessary BIP32 derivation data for each input's holding address.
 
 Finds or generates a change address that can be used for receiving change from transactions.
 
-checkForTxs()
+#### `checkForTxs()`
 Queries the blockchain for transactions involving the wallet's addresses. Updates active status, txHistory, addressHistory, and unspentCoins.
 
-getTxFee(hdRoot, inputs, receiver, value)
+#### `getTxFee(hdRoot, inputs, receiver, value)`
 Builds a transaction, calculates its fee, and returns the transaction's size in virtual bytes (vbytes).
 
-createTx(receiver, value, feeRate)
+#### `createTx(receiver, value, feeRate)`
 Creates a Bitcoin transaction using specified parameters: recipient, value, and fee rate. Returns the raw transaction and a JSON representation of the transaction.
 
-getInputData(amount)
+####`getInputData(amount)`
 Selects and returns a list of inputs for a transaction based on the specified amount.
 
-getWitnessUtxo(out)
+####`getWitnessUtxo(out)`
 Formats a UTXO for use in the bitcoinjs-lib library.
 
-getHdData(inputData)
+####`getHdData(inputData)`
 Generates the necessary BIP32 derivation data for each input's holding address.
 
-getEmptyChangeAddr()
+####`getEmptyChangeAddr()`
 Finds or generates a change address that can be used for receiving change from transactions.
 
 #Armonios-core Usage Examples
 
 Below are some usage examples for Armonios-core. These examples demonstrate how to create a wallet, generate addresses, check for transactions, create transactions, and access wallet properties.
+
 
 ```javascript
 // Import necessary libraries and classes
