@@ -1,4 +1,4 @@
-#Armonios-core Documentation
+##Armonios-core Documentation
 
 Armonios-core is a JavaScript class that enables the management of a Bitcoin wallet, including key generation, address creation, transaction creation, and interaction with the Bitcoin blockchain.
 
