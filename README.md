@@ -84,10 +84,10 @@ Builds a transaction, calculates its fee, and returns the transaction's size in 
 #### `createTx(receiver, value, feeRate)`
 Creates a Bitcoin transaction using specified parameters: recipient, value, and fee rate. Returns the raw transaction and a JSON representation of the transaction.
 
-####`getInputData(amount)`
+#### `getInputData(amount)`
 Selects and returns a list of inputs for a transaction based on the specified amount.
 
-####`getWitnessUtxo(out)`
+#### `getWitnessUtxo(out)`
 Formats a UTXO for use in the bitcoinjs-lib library.
 
 ####`getHdData(inputData)`
@@ -96,23 +96,14 @@ Generates the necessary BIP32 derivation data for each input's holding address.
 ####`getEmptyChangeAddr()`
 Finds or generates a change address that can be used for receiving change from transactions.
 
-#Armonios-core Usage Examples
+## Armonios-core Usage Examples
 
 Below are some usage examples for Armonios-core. These examples demonstrate how to create a wallet, generate addresses, check for transactions, create transactions, and access wallet properties.
 
 
 ```javascript
 // Import necessary libraries and classes
-const ecc = require('@bitcoinerlab/secp256k1');
-const bip39 = require('bip39');
-const { BIP32Factory } = require('bip32');
-const { ECPairFactory } = require('ecpair');
-const bip32 = BIP32Factory(ecc);
-const bitcoin = require('bitcoinjs-lib');
-const assert = require('assert');
-
-// Import the Wallet class from the provided code
-const Wallet = require('./path/to/your/WalletClass');
+const {Wallet,bip39} = require("Armonios-core")
 
 // Create a new wallet instance with a BIP39 mnemonic
 const mnemonic = bip39.generateMnemonic();
