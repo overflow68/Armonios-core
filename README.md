@@ -2,16 +2,11 @@
 
 Armonios-core is a JavaScript class that enables the management of a Bitcoin wallet, including key generation, address creation, transaction creation, and interaction with the Bitcoin blockchain through thir party api's.
 
-## Prerequisites
+## instalation
 
-Make sure you have the following libraries installed:
-
-- `@bitcoinerlab/secp256k1`: Library for elliptic curve cryptography operations.
-- `bip39`: Library for generating and working with BIP39 mnemonic phrases.
-- `bip32`: Library for generating and working with BIP32 hierarchical deterministic keys.
-- `ecpair`: Library for generating elliptic curve key pairs.
-- `bitcoinjs-lib`: Library for Bitcoin transaction and address generation.
-- `assert`: Built-in Node.js module for assertions.
+```javascript
+npm i armonios-core
+```
 
 ## Class: Wallet
 
